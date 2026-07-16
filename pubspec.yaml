@@ -1,0 +1,27 @@
+name: dejajson
+description: >-
+  Transparently decode DejaJson-encoded API responses (zlib with a shared
+  dictionary trained on your own API) with a drop-in Dio interceptor. Pairs
+  with the nylo/dejajson Laravel package.
+version: 0.1.0
+homepage: https://github.com/nylo-core/flutter-deja-json
+repository: https://github.com/nylo-core/flutter-deja-json
+issue_tracker: https://github.com/nylo-core/flutter-deja-json/issues
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  crypto: ^3.0.0
+  dio: ^5.2.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.24.0
+
+topics:
+  - dio
+  - json
+  - compression
+  - network
+  - interceptor
