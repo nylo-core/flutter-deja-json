@@ -12,12 +12,12 @@ environment:
   sdk: ^3.0.0
 
 dependencies:
-  crypto: ^3.0.0
-  dio: ^5.2.0
+  crypto: ^3.0.7
+  dio: ^5.11.0
 
 dev_dependencies:
-  lints: ^6.0.0
-  test: ^1.24.0
+  lints: ^6.1.0
+  test: ^1.31.2
 
 topics:
   - dio
