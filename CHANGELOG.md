@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-09-07
+
+### Changed
+
+- Bumped `dio` constraint to `^5.11.1`.
+- Bumped `test` dev dependency constraint to `^1.32.0`.
+
 ## 0.1.0 — 2026-08-06
 
 Initial release.
