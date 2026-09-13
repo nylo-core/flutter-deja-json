@@ -1,4 +1,7 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dejajson/dejajson.dart';
 import 'package:dio/dio.dart';
@@ -19,11 +22,12 @@ Future<void> main() async {
   // When the server answers with application/vnd.dejajson, the binary body
   // is decoded in place — response.data is ordinary JSON data, exactly as if
   // the server had sent plain JSON.
-  final response = await dio.get<Object?>('/users');
+  final Response<Object?> response = await dio.get<Object?>('/users');
   print(response.data);
 
   // Manual decoding (websockets, cached blobs, …) works too:
   const codec = DejaJsonCodec();
-  final envelope = codec.encode({'hello': 'world'}, dictionary: dictionary);
+  final Uint8List envelope =
+      codec.encode({'hello': 'world'}, dictionary: dictionary);
   print(codec.decode(envelope, dictionary: dictionary));
 }

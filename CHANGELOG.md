@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.2 — 2026-09-13
+
+### Changed
+
+- Added explicit type annotations to non-obvious local variables across the
+  library, example, tests and tooling. No behaviour change.
+- Static analysis now uses the `vibe_check` Nylo preset (added as a dev
+  dependency).
+- Updated the publish workflow to `actions/checkout@v5`.
+
 ## 0.1.1 — 2026-09-07
 
 ### Changed

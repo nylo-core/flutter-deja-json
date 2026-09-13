@@ -69,7 +69,7 @@ class DejaJsonCodec {
           'Payload is not a DejaJson v$version envelope.');
     }
 
-    final mode = envelope[3];
+    final int mode = envelope[3];
     final stream = envelope is Uint8List
         ? Uint8List.sublistView(envelope, _headerBytes)
         : Uint8List.fromList(envelope.sublist(_headerBytes));
@@ -106,7 +106,7 @@ class DejaJsonCodec {
   /// tests, fixtures, storage, or sending DejaJson request bodies.
   Uint8List encode(Object? data,
       {String? modes, DejaJsonDictionary? dictionary}) {
-    final effectiveModes = modes ?? supportedModes;
+    final String effectiveModes = modes ?? supportedModes;
 
     final String json;
     try {
@@ -114,7 +114,7 @@ class DejaJsonCodec {
     } on Object catch (e) {
       throw DejaJsonEncodeException('Cannot serialise the value to JSON: $e');
     }
-    final document = utf8.encode(json);
+    final Uint8List document = utf8.encode(json);
 
     Uint8List? best;
 
@@ -124,7 +124,7 @@ class DejaJsonCodec {
     }
 
     if (effectiveModes.contains(modeZlib)) {
-      final candidate =
+      final Uint8List candidate =
           _envelope(modeZlib, zlib.zlibDeflate(document, level, null));
       if (best == null || candidate.length < best.length) {
         best = candidate;
@@ -170,9 +170,9 @@ class DejaJsonCodec {
           'This envelope needs the shared dictionary, and none was provided.');
     }
 
-    final fdict = stream.length >= 6 && (stream[1] & 0x20) != 0;
+    final bool fdict = stream.length >= 6 && (stream[1] & 0x20) != 0;
     if (fdict) {
-      final check = dictionary.zlibCheck();
+      final List<int> check = dictionary.zlibCheck();
       for (var i = 0; i < 4; i++) {
         if (stream[2 + i] != check[i]) {
           throw DejaJsonFormatException(

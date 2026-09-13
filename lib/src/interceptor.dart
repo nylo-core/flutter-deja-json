@@ -84,7 +84,7 @@ class DejaJsonInterceptor extends Interceptor {
     }
 
     if (!_hasRequestHeader(options)) {
-      final dict = dictionary;
+      final DejaJsonDictionary? dict = dictionary;
       options.headers[requestHeader] =
           dict != null && modes.contains(DejaJsonCodec.modeDict)
               ? '$modes; dict=${dict.id}'
@@ -131,11 +131,12 @@ class DejaJsonInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    final response = err.response;
+    final Response<dynamic>? response = err.response;
     if (response != null && _flipped(err.requestOptions)) {
       _restoreRequestOptions(err.requestOptions);
       try {
         _rebuild(response);
+        // ignore: vibe_check/swallowed_exception
       } on DejaJsonException {
         // The request already failed; surface the original error untouched.
       }
@@ -153,7 +154,7 @@ class DejaJsonInterceptor extends Interceptor {
   }
 
   bool _hasRequestHeader(RequestOptions options) {
-    final needle = requestHeader.toLowerCase();
+    final String needle = requestHeader.toLowerCase();
     return options.headers.keys
         .any((String key) => key.toLowerCase() == needle);
   }
@@ -162,7 +163,7 @@ class DejaJsonInterceptor extends Interceptor {
   /// when the server encoded, otherwise exactly what Dio's own transformer
   /// would have produced for a JSON request.
   void _rebuild(Response<dynamic> response) {
-    final data = response.data;
+    final Object? data = response.data;
     if (data is! List<int>) {
       return; // Nothing to rebuild (null body, or another interceptor got here first).
     }
@@ -181,10 +182,12 @@ class DejaJsonInterceptor extends Interceptor {
       return;
     }
 
-    final contentType = response.headers.value(Headers.contentTypeHeader) ?? '';
+    final String contentType =
+        response.headers.value(Headers.contentTypeHeader) ?? '';
     final String text;
     try {
       text = utf8.decode(data);
+      // ignore: vibe_check/swallowed_exception
     } on FormatException {
       return; // Genuinely binary (an image, say) — hand the bytes through.
     }
@@ -203,9 +206,10 @@ class DejaJsonInterceptor extends Interceptor {
   }
 
   bool _isDejaJson(Response<dynamic> response) {
-    final contentType = response.headers.value(Headers.contentTypeHeader);
+    final String? contentType =
+        response.headers.value(Headers.contentTypeHeader);
     if (contentType != null) {
-      final mime = contentType.split(';').first.trim().toLowerCase();
+      final String mime = contentType.split(';').first.trim().toLowerCase();
       if (mime == DejaJsonCodec.contentType) {
         return true;
       }

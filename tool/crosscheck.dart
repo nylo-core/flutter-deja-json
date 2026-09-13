@@ -10,6 +10,7 @@
 //   php bin/generate-vectors.php --merge <report.json>
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dejajson/dejajson.dart';
 
@@ -42,7 +43,8 @@ Future<void> main(List<String> args) async {
   final results = <Map<String, Object?>>[];
   final dartEnvelopes = <Map<String, Object?>>[];
 
-  for (final v in (fixture['vectors'] as List).cast<Map<String, dynamic>>()) {
+  for (final Map<String, dynamic> v
+      in (fixture['vectors'] as List).cast<Map<String, dynamic>>()) {
     final name = v['name'] as String;
     final Object? data = v['data'];
 
@@ -64,8 +66,9 @@ Future<void> main(List<String> args) async {
       stderr.writeln('mode d decode threw for "$name": $e');
     }
 
-    final dartZ = codec.encode(data, modes: 'z');
-    final dartD = codec.encode(data, modes: 'd', dictionary: dictionary);
+    final Uint8List dartZ = codec.encode(data, modes: 'z');
+    final Uint8List dartD =
+        codec.encode(data, modes: 'd', dictionary: dictionary);
 
     try {
       selfOk = deepEquals(codec.decode(dartZ), data) &&

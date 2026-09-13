@@ -2,9 +2,9 @@
 bool deepEquals(Object? a, Object? b) {
   if (a is Map && b is Map) {
     if (a.length != b.length) return false;
-    final bKeys = b.keys.toList();
+    final List<Object?> bKeys = b.keys.toList();
     var i = 0;
-    for (final key in a.keys) {
+    for (final Object? key in a.keys) {
       // Key order matters: DejaJson guarantees it survives the round trip.
       if (key != bKeys[i++]) return false;
       if (!deepEquals(a[key], b[key])) return false;

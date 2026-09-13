@@ -55,10 +55,10 @@ void main() {
   }
 
   test('advertises modes and dictionary id, and asks for bytes', () async {
-    final (dio, adapter) = harness(
+    final (Dio dio, _FakeAdapter adapter) = harness(
         (options) => _body(utf8.encode('{"ok":true}'), 'application/json'));
 
-    final response = await dio.get<Object?>('/ping');
+    final Response<Object?> response = await dio.get<Object?>('/ping');
 
     expect(adapter.lastRequest!.headers['X-Deja-Json'],
         'dz; dict=${dictionary.id}');
@@ -68,7 +68,7 @@ void main() {
   });
 
   test('advertises only "z" without a dictionary', () async {
-    final (dio, adapter) = harness(
+    final (Dio dio, _FakeAdapter adapter) = harness(
         (options) => _body(utf8.encode('{"ok":true}'), 'application/json'),
         interceptor: DejaJsonInterceptor());
 
@@ -78,12 +78,12 @@ void main() {
   });
 
   test('decodes mode "d" responses and rewrites the content type', () async {
-    final data = {'data': users(10)};
-    final (dio, _) = harness((options) => _body(
+    final Map<String, List<Map<String, Object?>>> data = {'data': users(10)};
+    final (Dio dio, _) = harness((options) => _body(
         codec.encode(data, modes: 'd', dictionary: dictionary),
         DejaJsonCodec.contentType));
 
-    final response = await dio.get<Object?>('/users');
+    final Response<Object?> response = await dio.get<Object?>('/users');
 
     expect(deepEquals(response.data, data), isTrue);
     expect(response.headers.value(Headers.contentTypeHeader),
@@ -91,33 +91,33 @@ void main() {
   });
 
   test('decodes mode "z" responses', () async {
-    final data = {'data': users(10)};
-    final (dio, _) = harness((options) =>
+    final Map<String, List<Map<String, Object?>>> data = {'data': users(10)};
+    final (Dio dio, _) = harness((options) =>
         _body(codec.encode(data, modes: 'z'), DejaJsonCodec.contentType));
 
-    final response = await dio.get<Object?>('/users');
+    final Response<Object?> response = await dio.get<Object?>('/users');
 
     expect(deepEquals(response.data, data), isTrue);
   });
 
   test('decodes envelopes even when a proxy rewrote the content type',
       () async {
-    final data = {'data': users(5)};
-    final (dio, _) = harness((options) => _body(
+    final Map<String, List<Map<String, Object?>>> data = {'data': users(5)};
+    final (Dio dio, _) = harness((options) => _body(
         codec.encode(data, modes: 'd', dictionary: dictionary),
         'application/octet-stream'));
 
-    final response = await dio.get<Object?>('/users');
+    final Response<Object?> response = await dio.get<Object?>('/users');
 
     expect(deepEquals(response.data, data), isTrue);
   });
 
   test('plain JSON responses come out exactly as Dio would produce them',
       () async {
-    final (dio, _) = harness((options) =>
+    final (Dio dio, _) = harness((options) =>
         _body(utf8.encode('{"ok":true,"n":1.5}'), 'application/json'));
 
-    final response = await dio.get<Object?>('/plain');
+    final Response<Object?> response = await dio.get<Object?>('/plain');
 
     expect(response.data, {'ok': true, 'n': 1.5});
     expect(
@@ -125,33 +125,34 @@ void main() {
   });
 
   test('plain text responses become strings', () async {
-    final (dio, _) =
+    final (Dio dio, _) =
         harness((options) => _body(utf8.encode('hello'), 'text/plain'));
 
-    final response = await dio.get<Object?>('/text');
+    final Response<Object?> response = await dio.get<Object?>('/text');
 
     expect(response.data, 'hello');
   });
 
   test('empty bodies become null', () async {
-    final (dio, _) = harness((options) => _body(const [], 'application/json'));
+    final (Dio dio, _) =
+        harness((options) => _body(const [], 'application/json'));
 
-    final response = await dio.get<Object?>('/empty');
+    final Response<Object?> response = await dio.get<Object?>('/empty');
 
     expect(response.data, isNull);
   });
 
   test('non-UTF-8 binary passes through as bytes', () async {
     final png = [0x89, 0x50, 0x4E, 0x47, 0xFF, 0xFE];
-    final (dio, _) = harness((options) => _body(png, 'image/png'));
+    final (Dio dio, _) = harness((options) => _body(png, 'image/png'));
 
-    final response = await dio.get<Object?>('/image');
+    final Response<Object?> response = await dio.get<Object?>('/image');
 
     expect(response.data, png);
   });
 
   test('a corrupt envelope surfaces as a DioException', () async {
-    final (dio, _) = harness((options) =>
+    final (Dio dio, _) = harness((options) =>
         _body([0x44, 0x4A, 1, 0x7A, 9, 9, 9, 9, 9], DejaJsonCodec.contentType));
 
     await expectLater(
@@ -164,7 +165,7 @@ void main() {
 
   test('an envelope for a different dictionary names the problem', () async {
     final other = DejaJsonDictionary.fromBytes(utf8.encode('another dict'));
-    final (dio, _) = harness((options) => _body(
+    final (Dio dio, _) = harness((options) => _body(
         codec.encode(users(5), modes: 'd', dictionary: other),
         DejaJsonCodec.contentType));
 
@@ -176,13 +177,13 @@ void main() {
   });
 
   test('encoded error responses are decoded too', () async {
-    final errors = {
+    final Map<String, Object> errors = {
       'message': 'Invalid.',
       'errors': {
         'name': ['The name field is required.'],
       },
     };
-    final (dio, _) = harness((options) => _body(
+    final (Dio dio, _) = harness((options) => _body(
         codec.encode(errors, modes: 'd', dictionary: dictionary),
         DejaJsonCodec.contentType,
         status: 422));
@@ -196,7 +197,7 @@ void main() {
   });
 
   test('plain JSON error responses are decoded like Dio would', () async {
-    final (dio, _) = harness((options) => _body(
+    final (Dio dio, _) = harness((options) => _body(
         utf8.encode('{"message":"Not found."}'), 'application/json',
         status: 404));
 
@@ -209,11 +210,11 @@ void main() {
   });
 
   test('requests for raw bytes are never advertised or touched', () async {
-    final envelope = codec.encode(users(5), modes: 'z');
-    final (dio, adapter) =
+    final Uint8List envelope = codec.encode(users(5), modes: 'z');
+    final (Dio dio, _FakeAdapter adapter) =
         harness((options) => _body(envelope, 'application/octet-stream'));
 
-    final response = await dio.get<Object?>('/raw',
+    final Response<Object?> response = await dio.get<Object?>('/raw',
         options: Options(responseType: ResponseType.bytes));
 
     expect(adapter.lastRequest!.headers.containsKey('X-Deja-Json'), isFalse);
@@ -221,12 +222,12 @@ void main() {
   });
 
   test('advertise=false leaves requests and responses alone', () async {
-    final (dio, adapter) = harness(
+    final (Dio dio, _FakeAdapter adapter) = harness(
         (options) => _body(utf8.encode('{"ok":true}'), 'application/json'),
         interceptor:
             DejaJsonInterceptor(dictionary: dictionary, advertise: false));
 
-    final response = await dio.get<Object?>('/ping');
+    final Response<Object?> response = await dio.get<Object?>('/ping');
 
     expect(adapter.lastRequest!.headers.containsKey('X-Deja-Json'), isFalse);
     expect(adapter.sentResponseType, ResponseType.json);
@@ -234,7 +235,7 @@ void main() {
   });
 
   test('a custom request header is honoured', () async {
-    final (dio, adapter) = harness(
+    final (Dio dio, _FakeAdapter adapter) = harness(
         (options) => _body(utf8.encode('{}'), 'application/json'),
         interceptor: DejaJsonInterceptor(
             dictionary: dictionary, requestHeader: 'X-Custom-Deja'));
@@ -247,7 +248,7 @@ void main() {
   });
 
   test('an existing header is not overwritten', () async {
-    final (dio, adapter) = harness(
+    final (Dio dio, _FakeAdapter adapter) = harness(
         (options) => _body(utf8.encode('{"ok":true}'), 'application/json'));
 
     await dio.get<Object?>('/ping',

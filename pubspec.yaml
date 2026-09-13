@@ -3,7 +3,7 @@ description: >-
   Transparently decode DejaJson-encoded API responses (zlib with a shared
   dictionary trained on your own API) with a drop-in Dio interceptor. Pairs
   with the nylo/dejajson Laravel package.
-version: 0.1.1
+version: 0.1.2
 homepage: https://github.com/nylo-core/flutter-deja-json
 repository: https://github.com/nylo-core/flutter-deja-json
 issue_tracker: https://github.com/nylo-core/flutter-deja-json/issues
@@ -16,6 +16,7 @@ dependencies:
   dio: ^5.11.1
 
 dev_dependencies:
+  vibe_check: ^1.0.1
   lints: ^6.1.0
   test: ^1.32.0
 

@@ -2,6 +2,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dejajson/dejajson.dart';
 import 'package:test/test.dart';
@@ -18,8 +19,8 @@ void main() {
   });
 
   test('mode z round trips', () {
-    final data = users();
-    final envelope = codec.encode(data, modes: 'z');
+    final List<Map<String, Object?>> data = users();
+    final Uint8List envelope = codec.encode(data, modes: 'z');
 
     expect(envelope[3], 'z'.codeUnitAt(0));
     expect(deepEquals(codec.decode(envelope), data), isTrue);
@@ -27,9 +28,10 @@ void main() {
   });
 
   test('mode d round trips and beats mode z', () {
-    final data = users();
-    final withDict = codec.encode(data, modes: 'd', dictionary: dictionary);
-    final without = codec.encode(data, modes: 'z');
+    final List<Map<String, Object?>> data = users();
+    final Uint8List withDict =
+        codec.encode(data, modes: 'd', dictionary: dictionary);
+    final Uint8List without = codec.encode(data, modes: 'z');
 
     expect(withDict[3], 'd'.codeUnitAt(0));
     expect(deepEquals(codec.decode(withDict, dictionary: dictionary), data),
@@ -42,12 +44,12 @@ void main() {
     // DICTID, so plain zlib must win.
     final useless =
         DejaJsonDictionary.fromBytes(utf8.encode('qwertyuiop' * 50));
-    final unrelated =
+    final Uint8List unrelated =
         codec.encode({'unrelated': 'payload'}, dictionary: useless);
     expect(unrelated[3], 'z'.codeUnitAt(0));
 
     // A dictionary the payload leans on wins by a wide margin.
-    final related = codec.encode(users(), dictionary: dictionary);
+    final Uint8List related = codec.encode(users(), dictionary: dictionary);
     expect(related[3], 'd'.codeUnitAt(0));
   });
 
@@ -120,7 +122,7 @@ void main() {
   });
 
   test('corrupt streams fail loudly', () {
-    final envelope = codec.encode(users(), modes: 'z');
+    final Uint8List envelope = codec.encode(users(), modes: 'z');
     final corrupt = [...envelope];
     corrupt.setRange(10, 14, [126, 126, 126, 126]);
 
@@ -129,7 +131,8 @@ void main() {
   });
 
   test('mode d without the dictionary names the problem', () {
-    final envelope = codec.encode(users(), modes: 'd', dictionary: dictionary);
+    final Uint8List envelope =
+        codec.encode(users(), modes: 'd', dictionary: dictionary);
 
     expect(
         () => codec.decode(envelope),
@@ -138,7 +141,8 @@ void main() {
   });
 
   test('mode d with the wrong dictionary names the problem', () {
-    final envelope = codec.encode(users(), modes: 'd', dictionary: dictionary);
+    final Uint8List envelope =
+        codec.encode(users(), modes: 'd', dictionary: dictionary);
     final other = DejaJsonDictionary.fromBytes(
         utf8.encode('a completely different dictionary'));
 
@@ -164,9 +168,11 @@ void main() {
   });
 
   test('compression level is honoured', () {
-    final data = users(200);
-    final fast = const DejaJsonCodec(level: 1).encode(data, modes: 'z');
-    final best = const DejaJsonCodec(level: 9).encode(data, modes: 'z');
+    final List<Map<String, Object?>> data = users(200);
+    final Uint8List fast =
+        const DejaJsonCodec(level: 1).encode(data, modes: 'z');
+    final Uint8List best =
+        const DejaJsonCodec(level: 9).encode(data, modes: 'z');
 
     expect(best.length, lessThanOrEqualTo(fast.length));
     expect(deepEquals(codec.decode(best), data), isTrue);

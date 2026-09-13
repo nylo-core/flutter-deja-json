@@ -3,6 +3,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dejajson/dejajson.dart';
 import 'package:test/test.dart';
@@ -26,27 +27,29 @@ void main() {
     expect(dictionary.id, dictionaryMeta['id']);
   });
 
-  for (final vector
+  for (final Map<String, dynamic> vector
       in (fixture['vectors'] as List).cast<Map<String, dynamic>>()) {
     final name = vector['name'] as String;
     final Object? data = vector['data'];
 
     test('$name: PHP mode "z" envelope decodes to the original data', () {
-      final decoded = codec.decode(base64.decode(vector['z'] as String));
+      final Object? decoded =
+          codec.decode(base64.decode(vector['z'] as String));
       expect(deepEquals(decoded, data), isTrue,
           reason: 'expected $data, got $decoded');
     });
 
     test('$name: PHP mode "d" envelope decodes to the original data', () {
-      final decoded = codec.decode(base64.decode(vector['d'] as String),
+      final Object? decoded = codec.decode(base64.decode(vector['d'] as String),
           dictionary: dictionary);
       expect(deepEquals(decoded, data), isTrue,
           reason: 'expected $data, got $decoded');
     });
 
     test('$name: both modes re-encode losslessly', () {
-      final z = codec.encode(data, modes: 'z');
-      final d = codec.encode(data, modes: 'd', dictionary: dictionary);
+      final Uint8List z = codec.encode(data, modes: 'z');
+      final Uint8List d =
+          codec.encode(data, modes: 'd', dictionary: dictionary);
 
       expect(deepEquals(codec.decode(z), data), isTrue);
       expect(deepEquals(codec.decode(d, dictionary: dictionary), data), isTrue);

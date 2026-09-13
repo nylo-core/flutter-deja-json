@@ -2,6 +2,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:dejajson/dejajson.dart';
@@ -9,7 +10,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('the id is a 16-hex sha256 prefix, matching the Laravel package', () {
-    final bytes = utf8.encode('shared bytes');
+    final Uint8List bytes = utf8.encode('shared bytes');
     final dictionary = DejaJsonDictionary.fromBytes(bytes);
 
     expect(dictionary.id, sha256.convert(bytes).toString().substring(0, 16));
@@ -22,7 +23,7 @@ void main() {
   });
 
   test('the bytes are defensively copied', () {
-    final source = utf8.encode('mutable source').toList();
+    final List<int> source = utf8.encode('mutable source').toList();
     final dictionary = DejaJsonDictionary.fromBytes(source);
     source[0] = 0;
 
@@ -32,7 +33,8 @@ void main() {
   test('zlibCheck matches the DICTID zlib writes into streams', () {
     final dictionary =
         DejaJsonDictionary.fromBytes(utf8.encode('{"id":1,"name":"User 1"}'));
-    final envelope = const DejaJsonCodec().encode({'id': 2, 'name': 'User 2'},
+    final Uint8List envelope = const DejaJsonCodec().encode(
+        {'id': 2, 'name': 'User 2'},
         modes: 'd', dictionary: dictionary);
 
     // Envelope layout: DJ, version, mode, CMF, FLG, DICTID (4 bytes).
